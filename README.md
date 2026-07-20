@@ -3,6 +3,14 @@
 SB STOCKS is a full-stack, real-time paper trading simulation application built with Next.js (App Router), MongoDB (Mongoose ODM), Finnhub live stock quote integration, JWT role-based security, and a dual aesthetic system featuring an 80s Cyberpunk TRON Film theme toggleable to Clean Modern Financial Light Mode.
 
 ---
+---
+
+## 🔗 Live Demo & Documentation
+
+- **Live Application**: [https://sb-stocks-ypzp.vercel.app/](https://sb-stocks-ypzp.vercel.app/)
+- **Project Documentation (Google Drive)**: [SB STOCKS Documentation Folder](https://drive.google.com/drive/folders/13f_HLmdpT8KQzWb_FwjxNEGHJbVC3zGL?usp=drive_link)
+- **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/16y0qQ-om5VPC1iIDls8joYohdYsRg3ve/view?usp=drive_link)
+
 
 ## 🌟 Key Features
 
