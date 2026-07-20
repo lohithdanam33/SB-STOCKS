@@ -91,16 +91,11 @@ Each request has a description explaining what it does and any setup it needs (e
 
 ---
 
-## 🌐 Deployment (Vercel & Render)
+---
 
-### Deploying to Vercel
-1. Push project to GitHub.
-2. Import repo on Vercel.
-3. Configure `MONGODB_URI`, `JWT_SECRET`, and `FINNHUB_API_KEY` in environment variables.
-4. Deploy!
+## 🔗 Live Demo & Documentation
 
-### Deploying to Render
-1. Create a Web Service on Render.
-2. Set Build Command: `npm install && npm run build`
-3. Set Start Command: `npm run start`
-4. Add `MONGODB_URI`, `JWT_SECRET`, and `FINNHUB_API_KEY` in Render Environment settings.
+- **Live Application**: [https://sb-stocks-ypzp.vercel.app/](https://sb-stocks-ypzp.vercel.app/)
+- **Project Documentation (Google Drive)**: [SB STOCKS Documentation Folder](https://drive.google.com/drive/folders/13f_HLmdpT8KQzWb_FwjxNEGHJbVC3zGL?usp=drive_link)
+
+Try it instantly using the demo credentials below, or register a new account to get your own $100,000 in virtual trading cash.
