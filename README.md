@@ -9,7 +9,7 @@ SB STOCKS is a full-stack, real-time paper trading simulation application built 
 
 - **Live Application**: [https://sb-stocks-ypzp.vercel.app/](https://sb-stocks-ypzp.vercel.app/)
 - **Project Documentation (Google Drive)**: [SB STOCKS Documentation Folder](https://drive.google.com/drive/folders/13f_HLmdpT8KQzWb_FwjxNEGHJbVC3zGL?usp=drive_link)
-- **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/16y0qQ-om5VPC1iIDls8joYohdYsRg3ve/view?usp=drive_link)
+- **Video Demo**: [Watch on Google Drive](https://drive.google.com/file/d/19gEhAkrrV8j0BGPlY_8K97OXZz3iaAH_/view?usp=sharing)
 
 
 ## 🌟 Key Features
