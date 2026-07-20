@@ -1,0 +1,361 @@
+{
+  "info": {
+    "name": "SB STOCKS API",
+    "description": "Full API test collection for SB STOCKS — a MongoDB/Next.js paper trading platform. Covers auth, stock catalog, trading, portfolio, watchlist, limit orders, transaction history, alerts, and admin management.\n\nHow to use:\n1. Import this collection AND the accompanying environment file (sb-stocks.postman_environment.json) into Postman.\n2. Select the 'SB STOCKS Local' environment (top-right dropdown).\n3. Make sure the app is running locally (npm run dev) at the base_url below.\n4. Run requests roughly top-to-bottom within each folder — Register/Login sets your session cookie automatically for all following requests.\n5. For Admin folder requests, log in with the seeded admin@sbstocks.com / admin123 account first (or your own admin account) so the session cookie has admin role.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000", "type": "string" },
+    { "key": "stock_symbol", "value": "NVDA", "type": "string" },
+    { "key": "limit_order_id", "value": "", "type": "string" },
+    { "key": "admin_stock_id", "value": "", "type": "string" },
+    { "key": "admin_user_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Tester\",\n  \"email\": \"postman.tester@example.com\",\n  \"password\": \"testpass123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"] },
+            "description": "Creates a new user with $100,000 virtual balance and sets the sb_token session cookie. If the account already exists, this returns 400 — use Login instead."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.tester@example.com\",\n  \"password\": \"testpass123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Authenticates and sets the sb_token session cookie used by every subsequent request in this collection (Postman's cookie jar handles this automatically)."
+          }
+        },
+        {
+          "name": "Login as Admin (seeded account)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sbstocks.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] },
+            "description": "Run this before any request in the '5. Admin' folder to get an admin-role session."
+          }
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] },
+            "description": "Returns the logged-in user's profile, cash balance, holdings valuation, and net worth. 401 if not logged in."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/auth/logout", "host": ["{{base_url}}"], "path": ["api", "auth", "logout"] },
+            "description": "Clears the sb_token session cookie."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Stocks",
+      "item": [
+        {
+          "name": "List All Stocks (live quotes)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stocks?live=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stocks"],
+              "query": [{ "key": "live", "value": "true" }]
+            },
+            "description": "Returns the full stock catalog with real-time Finnhub quotes attached. Check the isRealTime field on each stock to confirm live data is flowing."
+          }
+        },
+        {
+          "name": "Search Stocks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stocks?query=apple&live=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stocks"],
+              "query": [{ "key": "query", "value": "apple" }, { "key": "live", "value": "true" }]
+            },
+            "description": "Searches the catalog by symbol or name (case-insensitive)."
+          }
+        },
+        {
+          "name": "Filter Stocks by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stocks?category=Tech&live=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stocks"],
+              "query": [{ "key": "category", "value": "Tech" }, { "key": "live", "value": "true" }]
+            }
+          }
+        },
+        {
+          "name": "Get Single Stock Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stocks/{{stock_symbol}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stocks", "{{stock_symbol}}"]
+            },
+            "description": "Returns live quote, whether it's on your watchlist, and your current holding (if any) for this symbol."
+          }
+        },
+        {
+          "name": "Get Stock Chart History (1D)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stocks/{{stock_symbol}}/chart?period=1D",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stocks", "{{stock_symbol}}", "chart"],
+              "query": [{ "key": "period", "value": "1D" }]
+            },
+            "description": "Returns recorded real Finnhub price snapshots for the given period. Valid periods: 1D, 1W, 1M, 1Y, ALL. Will be sparse/empty until snapshots accumulate — this is expected on a fresh install."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Trading & Portfolio",
+      "item": [
+        {
+          "name": "Place Market BUY Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stockSymbol\": \"{{stock_symbol}}\",\n  \"type\": \"BUY\",\n  \"orderType\": \"MARKET\",\n  \"quantity\": 2\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/trade", "host": ["{{base_url}}"], "path": ["api", "trade"] },
+            "description": "Executes immediately at current market price, deducts cash, updates/creates the portfolio holding, and logs a transaction."
+          }
+        },
+        {
+          "name": "Place Limit BUY Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stockSymbol\": \"{{stock_symbol}}\",\n  \"type\": \"BUY\",\n  \"orderType\": \"LIMIT\",\n  \"quantity\": 1,\n  \"targetPrice\": 50\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/trade", "host": ["{{base_url}}"], "path": ["api", "trade"] },
+            "description": "Creates a PENDING limit order. It only executes once the market price crosses targetPrice (checked whenever GET /api/limit-orders runs)."
+          }
+        },
+        {
+          "name": "Place Market SELL Order",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stockSymbol\": \"{{stock_symbol}}\",\n  \"type\": \"SELL\",\n  \"orderType\": \"MARKET\",\n  \"quantity\": 1\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/trade", "host": ["{{base_url}}"], "path": ["api", "trade"] },
+            "description": "Run this AFTER a BUY so you actually hold shares to sell. Will return 400 if you don't own enough shares."
+          }
+        },
+        {
+          "name": "Get Portfolio",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/portfolio", "host": ["{{base_url}}"], "path": ["api", "portfolio"] },
+            "description": "Returns cash balance, all holdings with live current value & unrealized P&L, and overall net worth."
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/transactions", "host": ["{{base_url}}"], "path": ["api", "transactions"] },
+            "description": "Full audit log of every BUY/SELL, newest first."
+          }
+        },
+        {
+          "name": "Reset Virtual Balance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 100000\n}" },
+            "url": { "raw": "{{base_url}}/api/user/reset-balance", "host": ["{{base_url}}"], "path": ["api", "user", "reset-balance"] },
+            "description": "Resets cash balance only — does not clear existing holdings or transaction history."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Watchlist & Limit Orders",
+      "item": [
+        {
+          "name": "Toggle Watchlist (Add/Remove)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"stockSymbol\": \"{{stock_symbol}}\"\n}" },
+            "url": { "raw": "{{base_url}}/api/watchlist", "host": ["{{base_url}}"], "path": ["api", "watchlist"] },
+            "description": "Toggles: adds if not already watchlisted, removes if it is. Run twice in a row to see both branches."
+          }
+        },
+        {
+          "name": "Get Watchlist",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/watchlist", "host": ["{{base_url}}"], "path": ["api", "watchlist"] }
+          }
+        },
+        {
+          "name": "Get Limit Orders (auto-executes eligible ones)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/limit-orders", "host": ["{{base_url}}"], "path": ["api", "limit-orders"] },
+            "description": "Returns all your limit orders. As a side effect, checks every PENDING order against the current live price and auto-executes any that qualify. Copy an 'id' from the response into the limit_order_id variable to test cancellation."
+          }
+        },
+        {
+          "name": "Cancel Limit Order",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/limit-orders/{{limit_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "limit-orders", "{{limit_order_id}}"]
+            },
+            "description": "Set the limit_order_id collection variable to a PENDING order's id first (from 'Get Limit Orders')."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin (requires admin role)",
+      "item": [
+        {
+          "name": "Get System Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/stats", "host": ["{{base_url}}"], "path": ["api", "admin", "stats"] },
+            "description": "Total users, stocks, transactions, holdings, cash in system, transaction volume. 403 if not an admin."
+          }
+        },
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] },
+            "description": "Copy a user 'id' from the response into admin_user_id to test the update request below."
+          }
+        },
+        {
+          "name": "Update User (role / balance)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{admin_user_id}}\",\n  \"virtualBalance\": 150000\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Create Custom Stock",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"TEST\",\n  \"name\": \"Postman Test Corp\",\n  \"category\": \"Tech\",\n  \"currentPrice\": 42.50,\n  \"description\": \"Created via Postman for CRUD testing\",\n  \"isTrending\": false\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/stocks", "host": ["{{base_url}}"], "path": ["api", "admin", "stocks"] },
+            "description": "Copy the returned stock 'id' into admin_stock_id to test Update/Delete below."
+          }
+        },
+        {
+          "name": "Update Stock Price/Info",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{admin_stock_id}}\",\n  \"currentPrice\": 45.00\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/stocks", "host": ["{{base_url}}"], "path": ["api", "admin", "stocks"] }
+          }
+        },
+        {
+          "name": "Delete Stock",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/admin/stocks?id={{admin_stock_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stocks"],
+              "query": [{ "key": "id", "value": "{{admin_stock_id}}" }]
+            },
+            "description": "Run this LAST for the TEST stock created above, so it doesn't linger in your catalog."
+          }
+        },
+        {
+          "name": "Broadcast System Alert",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman Test Alert\",\n  \"message\": \"This is a test broadcast created via the API test collection.\",\n  \"alertType\": \"ADMIN_NOTICE\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/alerts", "host": ["{{base_url}}"], "path": ["api", "alerts"] },
+            "description": "Requires admin role. Shows up in the app's broadcast banner."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Alerts & Health",
+      "item": [
+        {
+          "name": "Get System Alerts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/alerts", "host": ["{{base_url}}"], "path": ["api", "alerts"] },
+            "description": "Public — no auth required. Seeds 3 default alerts on first call if none exist yet."
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/health", "host": ["{{base_url}}"], "path": ["api", "health"] },
+            "description": "Confirms the MongoDB connection is alive. Returns { ok: true } if connected."
+          }
+        }
+      ]
+    }
+  ]
+}
